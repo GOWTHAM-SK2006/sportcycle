@@ -1,0 +1,28 @@
+# Production Profile for Railway & Cloud Deployment
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:${DATABASE_URL:jdbc:postgresql://aws-1-ap-southeast-2.pooler.supabase.com:5432/postgres?sslmode=require}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DATABASE_USERNAME:postgres.afxpqhfbisswvuxktklk}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DATABASE_PASSWORD:SKkabaddi63@}}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 30000
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    open-in-view: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+sportcycle:
+  supabase:
+    url: ${SUPABASE_URL:https://afxpqhfbisswvuxktklk.supabase.co}
+    bucket: ${SUPABASE_STORAGE_BUCKET:sportcycle-products}
