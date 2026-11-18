@@ -31,3 +31,4 @@ EXPOSE 8080
 
 # Run Spring Boot binding to Railway's assigned PORT
 ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-Dserver.port=${PORT}", "-jar", "app.jar"]
+
