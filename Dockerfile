@@ -22,6 +22,9 @@ COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 
 COPY frontend/ ./
+# Ensure public directory exists
+RUN mkdir -p /app/frontend/public
+
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
@@ -31,8 +34,8 @@ RUN npm run build
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Install Node.js 20, npm, curl, and libc6-compat
-RUN apk add --no-cache nodejs npm libc6-compat curl bash
+# Install Node.js 20, npm, curl, bash, and dos2unix
+RUN apk add --no-cache nodejs npm libc6-compat curl bash dos2unix
 
 # Copy Spring Boot backend artifacts
 COPY --from=backend-build /app/backend/target/*.jar /app/backend/app.jar
@@ -44,16 +47,17 @@ COPY --from=frontend-build /app/frontend/.next /app/frontend/.next
 COPY --from=frontend-build /app/frontend/public /app/frontend/public
 COPY --from=frontend-build /app/frontend/next.config.mjs /app/frontend/
 
-# Copy startup orchestrator
+# Copy startup orchestrator and ensure executable line endings
 COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
+RUN dos2unix /app/start.sh || sed -i -e 's/\r$//' /app/start.sh && chmod +x /app/start.sh
 
 # Environment settings
 ENV NODE_ENV=production
 ENV SPRING_PROFILES_ACTIVE=prod
+ENV BACKEND_PORT=8085
 ENV PORT=3000
 
 # Railway routes traffic to $PORT
-EXPOSE 8080 3000
+EXPOSE 3000 8085
 
 ENTRYPOINT ["/bin/sh", "/app/start.sh"]
