@@ -54,23 +54,26 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/sports/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/brands/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/clubs/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
-                        .requestMatchers("/api/v1/cart/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/payments/webhook").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // Root, Error & Health
+                        .requestMatchers("/", "/error", "/favicon.ico").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
+
+                        // Public endpoints (both with and without context-path prefix)
+                        .requestMatchers("/auth/**", "/api/v1/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/sports/**", "/api/v1/sports/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/categories/**", "/api/v1/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/brands/**", "/api/v1/brands/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/products/**", "/api/v1/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/clubs/**", "/api/v1/clubs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/reviews/**", "/api/v1/reviews/**").permitAll()
+                        .requestMatchers("/cart/**", "/api/v1/cart/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/payments/webhook", "/api/v1/payments/webhook").permitAll()
 
                         // Role-specific endpoints
-                        .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/api/v1/seller/**").hasAnyAuthority("ROLE_SELLER", "ROLE_ADMIN")
-                        .requestMatchers("/api/v1/club/admin/**").hasAnyAuthority("ROLE_CLUB_ADMIN", "ROLE_ADMIN")
+                        .requestMatchers("/admin/**", "/api/v1/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/seller/**", "/api/v1/seller/**").hasAnyAuthority("ROLE_SELLER", "ROLE_ADMIN")
+                        .requestMatchers("/club/admin/**", "/api/v1/club/admin/**").hasAnyAuthority("ROLE_CLUB_ADMIN", "ROLE_ADMIN")
 
                         // All other authenticated
                         .anyRequest().authenticated()

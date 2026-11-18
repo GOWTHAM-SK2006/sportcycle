@@ -26,3 +26,4 @@ sportcycle:
   supabase:
     url: ${SUPABASE_URL:https://afxpqhfbisswvuxktklk.supabase.co}
     bucket: ${SUPABASE_STORAGE_BUCKET:sportcycle-products}
+
