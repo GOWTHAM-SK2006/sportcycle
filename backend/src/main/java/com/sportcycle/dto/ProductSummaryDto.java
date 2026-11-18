@@ -27,6 +27,11 @@ public class ProductSummaryDto {
     private Boolean isVerified;
     private BigDecimal originalPrice;
     private BigDecimal sellingPrice;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("price")
+    public BigDecimal getPrice() {
+        return sellingPrice != null ? sellingPrice : originalPrice;
+    }
     private Integer discountPercentage;
     private Integer stockQuantity;
     private ProductStatus status;

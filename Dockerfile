@@ -1,34 +1,59 @@
-# ==========================================
-# SPORTCYCLE Backend - Production Dockerfile for Railway
-# ==========================================
+# ==============================================================================
+# SPORTCYCLE – Production Multi-Stage Dockerfile (Next.js 14 + Spring Boot 3.3)
+# ==============================================================================
 
-# Stage 1: Build Java 21 Spring Boot Application
-FROM maven:3.9-eclipse-temurin-21-alpine AS build
-WORKDIR /app
+# STAGE 1: Build Spring Boot 3.3 / Java 21 Backend
+FROM maven:3.9-eclipse-temurin-21-alpine AS backend-build
+WORKDIR /app/backend
 
-# Copy Maven descriptor and cache dependencies offline
-COPY backend/pom.xml ./pom.xml
+# Cache Maven dependencies
+COPY backend/pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copy backend source code and build production JAR
+# Copy backend source and compile executable JAR
 COPY backend/src ./src
 RUN mvn clean package -DskipTests
 
-# Stage 2: Minimal Production JRE Alpine Runner
+# STAGE 2: Build Next.js 14 Frontend
+FROM node:20-alpine AS frontend-build
+WORKDIR /app/frontend
+
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm ci
+
+COPY frontend/ ./
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+RUN npm run build
+
+# STAGE 3: Unified Production Runtime (Eclipse Temurin 21 + Node.js 20)
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Run as non-root user for security
-RUN addgroup -S spring && adduser -S spring -G spring
-USER spring:spring
+# Install Node.js 20, npm, curl, and libc6-compat
+RUN apk add --no-cache nodejs npm libc6-compat curl bash
 
-# Copy built executable JAR from build stage
-COPY --from=build /app/target/*.jar app.jar
+# Copy Spring Boot backend artifacts
+COPY --from=backend-build /app/backend/target/*.jar /app/backend/app.jar
 
-# Railway automatically assigns PORT environment variable
-ENV PORT=8080
-EXPOSE 8080
+# Copy Next.js frontend production bundle
+COPY --from=frontend-build /app/frontend/package.json /app/frontend/
+COPY --from=frontend-build /app/frontend/node_modules /app/frontend/node_modules
+COPY --from=frontend-build /app/frontend/.next /app/frontend/.next
+COPY --from=frontend-build /app/frontend/public /app/frontend/public
+COPY --from=frontend-build /app/frontend/next.config.mjs /app/frontend/
 
-# Run Spring Boot binding to Railway's assigned PORT
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-Dserver.port=${PORT}", "-jar", "app.jar"]
+# Copy startup orchestrator
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
+# Environment settings
+ENV NODE_ENV=production
+ENV SPRING_PROFILES_ACTIVE=prod
+ENV PORT=3000
+
+# Railway routes traffic to $PORT
+EXPOSE 8080 3000
+
+ENTRYPOINT ["/bin/sh", "/app/start.sh"]

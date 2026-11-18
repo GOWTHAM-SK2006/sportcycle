@@ -75,6 +75,7 @@ export interface ProductSummary {
   isVerified: boolean;
   originalPrice: number;
   sellingPrice: number;
+  price?: number;
   discountPercentage: number;
   stockQuantity: number;
   status: ProductStatus;
@@ -130,6 +131,7 @@ export interface ProductDetail {
   isVerified: boolean;
   originalPrice: number;
   sellingPrice: number;
+  price?: number;
   discountPercentage: number;
   stockQuantity: number;
   sku?: string;

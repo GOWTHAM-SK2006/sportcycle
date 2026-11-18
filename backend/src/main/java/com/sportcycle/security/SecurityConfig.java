@@ -55,7 +55,7 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Root, Error & Health
-                        .requestMatchers("/", "/error", "/favicon.ico").permitAll()
+                        .requestMatchers("/", "/error", "/favicon.ico", "/status/**", "/api/v1/status/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
 

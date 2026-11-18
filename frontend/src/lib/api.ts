@@ -20,7 +20,7 @@ import {
   Address,
 } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? '/api/v1' : 'http://127.0.0.1:8080/api/v1');
 
 export function getSessionId(): string {
   if (typeof window === 'undefined') return '';
